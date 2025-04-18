@@ -19,8 +19,10 @@ from django.contrib import admin
 from django.shortcuts import render
 from django.urls import path, include
 
+from accounts.views import HomePageView
+
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('accounts/', include('accounts.urls')),
-    path('', lambda request: render(request, 'base.html'), name='home'),
+    path('', HomePageView.as_view(), name='home'),
 ]

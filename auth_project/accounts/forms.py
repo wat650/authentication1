@@ -9,18 +9,40 @@ User = get_user_model()
 
 
 class UserCreationForm(forms.ModelForm):
-    password1 = forms.CharField(label=_('Password'), widget=forms.PasswordInput)
-    password2 = forms.CharField(label=_('Password confirmation'), widget=forms.PasswordInput)
-    # Champs supplémentaires pour le modèle Client
-    city = forms.CharField(label=_('City'), max_length=255, required=False)
-    date_of_birth = forms.DateField(label=_('Date of Birth'), required=False,
-                                    widget=forms.DateInput(attrs={'type': 'date'}))
-    gender = forms.ChoiceField(label=_('Gender'), choices=[('', 'Select Gender')] + GenderChoices.choices,
-                               required=False)
+    password1 = forms.CharField(
+        label=_('Password'),
+        widget=forms.PasswordInput(attrs={'class': 'form-control', 'placeholder': 'Entrez votre mot de passe'})
+    )
+    password2 = forms.CharField(
+        label=_('Password confirmation'),
+        widget=forms.PasswordInput(attrs={'class': 'form-control', 'placeholder': 'Confirmez votre mot de passe'})
+    )
+    city = forms.CharField(
+        label=_('City'),
+        max_length=255,
+        required=False,
+        widget=forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Entrez votre ville'})
+    )
+    date_of_birth = forms.DateField(
+        label=_('Date of Birth'),
+        required=False,
+        widget=forms.DateInput(attrs={'class': 'form-control', 'type': 'date'})
+    )
+    gender = forms.ChoiceField(
+        label=_('Gender'),
+        choices=[('', 'Sélectionnez votre genre')] + GenderChoices.choices,
+        required=False,
+        widget=forms.Select(attrs={'class': 'form-select'})
+    )
 
     class Meta:
         model = User
         fields = ('email', 'first_name', 'last_name')
+        widgets = {
+            'email': forms.EmailInput(attrs={'class': 'form-control', 'placeholder': 'Entrez votre email'}),
+            'first_name': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Entrez votre prénom'}),
+            'last_name': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Entrez votre nom'}),
+        }
 
     def clean_password2(self):
         password1 = self.cleaned_data.get('password1')
@@ -30,12 +52,10 @@ class UserCreationForm(forms.ModelForm):
         return password2
 
     def save(self, commit=True):
-        # Créer l'utilisateur
         user = super().save(commit=False)
         user.set_password(self.cleaned_data['password1'])
         if commit:
             user.save()
-            # Créer le profil Client associé
             Client.objects.create(
                 user=user,
                 city=self.cleaned_data.get('city'),
@@ -46,5 +66,11 @@ class UserCreationForm(forms.ModelForm):
 
 
 class UserLoginForm(forms.Form):
-    email = forms.EmailField(label=_('Email'))
-    password = forms.CharField(label=_('Password'), widget=forms.PasswordInput)
+    email = forms.EmailField(
+        label=_('Email'),
+        widget=forms.EmailInput(attrs={'class': 'form-control', 'placeholder': 'Entrez votre email'})
+    )
+    password = forms.CharField(
+        label=_('Password'),
+        widget=forms.PasswordInput(attrs={'class': 'form-control', 'placeholder': 'Entrez votre mot de passe'})
+    )

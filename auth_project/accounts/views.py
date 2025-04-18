@@ -1,9 +1,20 @@
+from django.http import HttpResponse
 from django.views.generic import View
 from django.shortcuts import render, redirect
 from django.contrib import messages
 from .forms import UserCreationForm, UserLoginForm
 from django.contrib.auth import authenticate, login
 from django.contrib.auth import logout
+
+
+class HomePageView(View):
+    def get(self, request) -> HttpResponse:
+        user = request.user
+        context = {
+            'user': user
+        }
+
+        return render(request, "index.html", context)
 
 
 class RegisterView(View):
