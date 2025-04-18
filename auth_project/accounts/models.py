@@ -104,3 +104,32 @@ class Client(BaseModel):
 
     def __str__(self):
         return f"{self.user.get_full_name()} ({self.city or ''})".strip()
+
+
+class Seller(BaseModel):
+    user = models.OneToOneField(
+        User,
+        on_delete=models.CASCADE,
+        verbose_name=_("User"),
+        help_text=_("The user associated with this seller."),
+    )
+    store_name = models.CharField(
+        max_length=255,
+        verbose_name=_("Store Name"),
+        help_text=_("The name of the seller's store."),
+        null=True,
+        blank=True,
+    )
+    registration_date = models.DateField(
+        verbose_name=_("Registration Date"),
+        help_text=_("The date the seller registered."),
+        auto_now_add=True,
+        blank=True,
+    )
+
+    class Meta:
+        verbose_name = _("Seller")
+        verbose_name_plural = _("Sellers")
+
+    def __str__(self):
+        return f"{self.user.get_full_name()} ({self.store_name or ''})".strip()
