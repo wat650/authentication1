@@ -6,6 +6,7 @@ from django.contrib.auth.models import PermissionsMixin
 from django.db import models
 from django.utils.translation import gettext_lazy as _
 from django_extensions.db.models import ActivatorModel, TimeStampedModel
+from django.utils import timezone
 
 
 from accounts.manager import UserManager
@@ -67,6 +68,33 @@ class User(BaseModel, AbstractBaseUser, PermissionsMixin):
 
     def __str__(self):
         return self.email
+
+
+class EmailVerificationToken(BaseModel):
+    user = models.OneToOneField(
+        User,
+        on_delete=models.CASCADE,
+        verbose_name=_("User"),
+        help_text=_("The user associated with this token."),
+    )
+    token = models.UUIDField(default=uuid.uuid4, unique=True, editable=False)
+    created_at = models.DateTimeField(auto_now_add=True)
+    expires_at = models.DateTimeField()
+
+    def save(self, *args, **kwargs):
+        if not self.expires_at:
+            self.expires_at = timezone.now() + timezone.timedelta(hours=24)  # Expire après 24h
+        super().save(*args, **kwargs)
+
+    def is_valid(self):
+        return timezone.now() <= self.expires_at
+
+    class Meta:
+        verbose_name = _("Email Verification Token")
+        verbose_name_plural = _("Email Verification Tokens")
+
+    def __str__(self):
+        return f"Token for {self.user.email}"
 
 
 class Client(BaseModel):

@@ -1,0 +1,28 @@
+{% extends 'base.html' %}
+{% block title %}Vérification d'email{% endblock %}
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-6">
+        <div class="card shadow">
+            <div class="card-header bg-primary text-white">
+                <h3 class="mb-0">Vérification d'email</h3>
+            </div>
+            <div class="card-body">
+                {% if messages %}
+                    {% for message in messages %}
+                        <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                            {{ message }}
+                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                        </div>
+                    {% endfor %}
+                {% else %}
+                    <p>Vérification en cours...</p>
+                {% endif %}
+                <p class="text-center">
+                    <a href="{% url 'accounts:login' %}" class="btn btn-primary">Retour à la connexion</a>
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
