@@ -2,3 +2,4 @@
 *.pyc pycache/ *.pyo *.pyd .Python env/ venv/ ENV/
 media/
 static/
+.env
