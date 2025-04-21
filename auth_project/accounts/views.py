@@ -1,10 +1,12 @@
+from django.conf import settings
+from django.core.mail import send_mail
 from django.http import HttpResponse
 from django.views.generic import View
 from django.shortcuts import render, redirect
 from django.contrib import messages
-from .forms import UserCreationForm, UserLoginForm
+from .forms import UserCreationForm, UserLoginForm, ResendVerificationForm
 from django.contrib.auth import authenticate, login, logout
-from .models import EmailVerificationToken
+from .models import EmailVerificationToken, User
 from django.utils.translation import gettext_lazy as _
 
 
@@ -87,3 +89,41 @@ class VerifyEmailView(View):
         except EmailVerificationToken.DoesNotExist:
             messages.error(request, _('Lien de vérification invalide.'))
         return render(request, self.template_name, {'token': token})
+
+
+class ResendVerificationView(View):
+    template_name = 'accounts/resend_verification.html'
+
+    def get(self, request):
+        form = ResendVerificationForm()
+        return render(request, self.template_name, {'form': form})
+
+    def post(self, request):
+        form = ResendVerificationForm(request.POST)
+        if form.is_valid():
+            email = form.cleaned_data['email']
+            user = User.objects.get(email=email)
+            # Supprimer tout token existant
+            EmailVerificationToken.objects.filter(user=user).delete()
+            # Créer un nouveau token
+            token = EmailVerificationToken.objects.create(user=user)
+            verification_url = f"{settings.BASE_URL}/accounts/verify-email/{token.token}/"
+            subject = _('Renvoyer la vérification de votre adresse email')
+            message = _(
+                f'Bonjour {user.get_full_name() or user.email},\n\n'
+                f'Vous avez demandé un nouveau lien de vérification. Veuillez cliquer sur le lien suivant pour '
+                f'vérifier votre adresse email :\n'
+                f'{verification_url}\n\n'
+                f'Ce lien expire dans 24 heures.\n\n'
+                f'Merci,\nL\'équipe MonApp'
+            )
+            send_mail(
+                subject,
+                message,
+                settings.DEFAULT_FROM_EMAIL,
+                [user.email],
+                fail_silently=False,
+            )
+            messages.success(request, _('Un nouvel email de vérification a été envoyé.'))
+            return redirect('accounts:login')
+        return render(request, self.template_name, {'form': form})

@@ -103,3 +103,20 @@ class UserLoginForm(forms.Form):
         label=_('Password'),
         widget=forms.PasswordInput(attrs={'class': 'form-control', 'placeholder': 'Entrez votre mot de passe'})
     )
+
+
+class ResendVerificationForm(forms.Form):
+    email = forms.EmailField(
+        label=_('Email'),
+        widget=forms.EmailInput(attrs={'class': 'form-control', 'placeholder': 'Entrez votre email'})
+    )
+
+    def clean_email(self):
+        email = self.cleaned_data.get('email')
+        try:
+            user = User.objects.get(email=email)
+            if user.is_active:
+                raise forms.ValidationError(_('Ce compte est déjà vérifié.'))
+            return email
+        except User.DoesNotExist:
+            raise forms.ValidationError(_('Aucun compte n\'existe avec cet email.'))
